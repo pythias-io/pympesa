@@ -1,11 +1,14 @@
 from setuptools import setup
 
 setup(name='pympesa',
-      version='0.1',
+      version='0.2',
       description='Mpesa rest api library',
       url='https://bitbucket.org/pythias_io/pympesa',
-      author='Wycliff Ogembo',
-      author_email='wycliffogembo87@gmail.com',
+      author='Andrew Kamau',
+      author_email='andrew@pythias.io',
       license='MIT',
       packages=['pympesa'],
+      install_requires=[
+          'requests',
+      ],
       zip_safe=False)

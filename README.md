@@ -1,6 +1,6 @@
 # Pympesa
 
-Mpesa API python client library:
+Mpesa Rest API python library:
 
   * B2B
   * B2C

@@ -4,46 +4,23 @@
 
 This exposes various mpesa functionalities to developers.
 
-CLASSES
-=======
-
-class Pympesa:
-
-    def __init__(self, access_token)
-
-    def b2b_payment_request(access_token, **kwargs)
-
-    def b2c_payment_request(access_token, **kwargs)
-
-    def c2b_register_url(access_token, **kwargs)
-
-    def c2b_simulate_transaction(access_token, **kwargs)
-
-    def transation_status(access_token, **kwargs)
-
-    def account_balance(access_token, **kwargs)
-
-    def reversal(access_token, **kwargs)
-
-    def lipa_na_mpesa_online_query(access_token, **kwargs)
-
-    def lipa_na_mpesa_online_payment(access_token, **kwargs)
-
-FUNCTIONS
-=========
-
-def generate_oauth_access_token(consumer_key, consumer_secret)
+All class functions take in keyword arguments (kwargs) and
+response returned in json.
 """
 
+import base64
 import requests
-from requests.auth import HTTPBasicAuth
 from datetime import datetime
+
+from .urls import URL
 
 
 class Pympesa:
 
-    def __init__(self, access_token):
-        self.access_token = access_token
+    def __init__(self, access_token, env="production", version="v1"):
+        self.headers = {"Authorization": "Bearer %s" % access_token}
+        self.env = env
+        self.version = version
 
     def b2b_payment_request(self, **kwargs):
 
@@ -129,9 +106,6 @@ class Pympesa:
            ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         """
 
-        api_url = "https://sandbox.safaricom.co.ke/mpesa/b2b/v1/paymentrequest"
-        headers = {"Authorization": "Bearer %s" % self.access_token}
-
         expected_keys = ["Initiator", "SecurityCredential",
                          "CommandID", "SenderIdentifierType",
                          "RecieverIdentifierType", "Amount",
@@ -140,9 +114,11 @@ class Pympesa:
 
         payload = process_kwargs(expected_keys, kwargs)
 
-        response = requests.post(api_url, json=payload, headers=headers)
+        response = requests.post(
+            URL[self.env][self.version]["b2b_payment_request"],
+            json=payload, headers=self.headers)
 
-        return response.text
+        return response.json()
 
     def b2c_payment_request(self, **kwargs):
 
@@ -215,9 +191,6 @@ class Pympesa:
            ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         """
 
-        api_url = "https://sandbox.safaricom.co.ke/mpesa/b2c/v1/paymentrequest"
-        headers = {"Authorization": "Bearer %s" % self.access_token}
-
         expected_keys = ["InitiatorName", "SecurityCredential",
                          "CommandID", "Amount", "PartyA",
                          "PartyB", "Remarks", "QueueTimeOutURL",
@@ -225,9 +198,11 @@ class Pympesa:
 
         payload = process_kwargs(expected_keys, kwargs)
 
-        response = requests.post(api_url, json=payload, headers=headers)
+        response = requests.post(
+            URL[self.env][self.version]["b2c_payment_request"],
+            json=payload, headers=self.headers)
 
-        return response.text
+        return response.json()
 
     def c2b_register_url(self, **kwargs):
 
@@ -274,17 +249,16 @@ class Pympesa:
            ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         """
 
-        api_url = "https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl"
-        headers = {"Authorization": "Bearer %s" % self.access_token}
-
         expected_keys = ["ShortCode", "ResponseType",
                          "ConfirmationURL", "ValidationURL"]
 
         payload = process_kwargs(expected_keys, kwargs)
 
-        response = requests.post(api_url, json=payload, headers=headers)
+        response = requests.post(
+            URL[self.env][self.version]["c2b_register_url"],
+            json=payload, headers=self.headers)
 
-        return response.text
+        return response.json()
 
     def c2b_simulate_transaction(self, **kwargs):
 
@@ -333,20 +307,19 @@ class Pympesa:
            ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         """
 
-        api_url = "https://sandbox.safaricom.co.ke/mpesa/c2b/v1/simulate"
-        headers = {"Authorization": "Bearer %s" % self.access_token}
-
         expected_keys = ["ShortCode", "Amount",
                          "Msisdn", "BillRefNumber"]
 
         payload = process_kwargs(expected_keys, kwargs)
         payload["CommandID"] = "CustomerPayBillOnline"
 
-        response = requests.post(api_url, json=payload, headers=headers)
+        response = requests.post(
+            URL[self.env][self.version]["c2b_simulate_transaction"],
+            json=payload, headers=self.headers)
 
-        return response.text
+        return response.json()
 
-    def transation_status(self, **kwargs):
+    def transation_status_request(self, **kwargs):
 
         """Use this API to check the status of transaction.
 
@@ -394,13 +367,33 @@ class Pympesa:
            ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
+           REQUEST DESCRIPTION/EXAMPLE
+           ===========================
+
+           {
+            "Initiator": "Initiator",
+            "SecurityCredential": ("KThCBU5kAY2Qm0RafdgWaoFY8bsbufMuve0mKSVAJeAUD6LsOsv9k5jQ6Zmm750DXc2BGpm6g4jJ9bB" +
+                                   "oUJ9n/9Ar+8o+N7RFg77d+C89pMUCUpOn1MJaAcDCh7lBXCLoVuin7aaaZnVYwUysalsfYcergUO4VI3QATFYhlXzEswB/9csCt0H" +
+                                   "wmgZLKTDB1bH0o9C7tHbD7OAARx5JXgQm+RBqzdUVMw0t2huwjcNLW0hZMQgdmjK0T6ss9YqmHc5rjXDx5RDrFE/8QjqstPLisX" +
+                                   "64bItqZURqNMR/h02UwEJO2nh5RalzUHSLPoq4Wx2TotYvMFvAXbW4/n5z14yng=="),
+            "CommandID": "Command ID - TransactionStatusQuery",
+            "TransactionID": "Transaction ID e.g LC7918MI73",
+            "PartyA": "Phone number that initiated the transaction",
+            "IdentifierType": "1",
+            "ResultURL": "https://ip_address:port/result_url",
+            "QueueTimeOutURL": "https://ip_address:port/timeout_url",
+            "Remarks": "Remarks",
+            "Occasion": "Optional parameter"
+           }
+
+
            Response Parameters
            ===================
 
            Name	                    | Description	                                      | Parameter Type  | Possible Values
            ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                                     |                                                     |                 |
-           OriginatorConverstionID  | The unique request ID for tracking a transaction	  | Alpha-Numeric	| alpha-numeric string of less then 20
+           OriginatorConversationID | The unique request ID for tracking a transaction	  | Alpha-Numeric	| alpha-numeric string of less then 20
                                     |                                                     |                 | characters
            ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                                     |                                                     |                 |
@@ -414,9 +407,6 @@ class Pympesa:
            ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         """
 
-        api_url = "https://sandbox.safaricom.co.ke/mpesa/transactionstatus/v1/query"
-        headers = {"Authorization": "Bearer %s" % self.access_token}
-
         expected_keys = ["Initiator", "SecurityCredential",
                          "TransactionID", "PartyA",
                          "ResultURL", "QueueTimeOutURL",
@@ -426,13 +416,15 @@ class Pympesa:
         payload["CommandID"] = "TransactionStatusQuery"
         payload["IdentifierType"] = "1"
 
-        response = requests.post(api_url, json=payload, headers=headers)
+        response = requests.post(
+            URL[self.env][self.version]["transation_status_request"],
+            json=payload, headers=self.headers)
 
-        return response.text
+        return response.json()
 
-    def account_balance(self, **kwargs):
+    def account_balance_request(self, **kwargs):
 
-        """Use this API for reversal transaction.
+        """Use this API to enquire the balance on an M-Pesa BuyGoods (Till Number).
 
            Request Keyword Parameters
            ==========================
@@ -470,6 +462,24 @@ class Pympesa:
            ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
+           REQUEST DESCRIPTION/EXAMPLE
+           ===========================
+
+           {
+            "CommandID": "AccountBalance",
+            "PartyA": "ShortCode",
+            "IdentifierType": "4",
+            "Remarks": "Remarks",
+            "Initiator": "apitest",
+            "SecurityCredential": ("KThCBU5kAY2Qm0RafdgWaoFY8bsbufMuve0mKSVAJeAUD6LsOsv9k5jQ6Zmm750DX" +
+                                   "c2BGpm6g4jJ9bBoUJ9n/9Ar+8o+N7RFg77d+C89pMUCUpOn1MJaAcDCh7lBXCLoVuin7aaaZnVYwUysalsfYcerg" +
+                                   "UO4VI3QATFYhlXzEswB/9csCt0HwmgZLKTDB1bH0o9C7tHbD7OAARx5JXgQm+RBqzdUVMw0t2huwjcNLW0hZMQgdmjK0T6ss9Y" +
+                                   "qmHc5rjXDx5RDrFE/8QjqstPLisX64bItqZURqNMR/h02UwEJO2nh5RalzUHSLPoq4Wx2TotYvMFvAXbW4/n5z14yng=="),
+            "QueueTimeOutURL":"http://172.29.227.122:9001/callback_mock/v1/submitResult",
+            "ResultURL":"http://172.29.227.122:9001/callback_mock/v1/submitResult"
+           }
+
+
            Response Parameters
            ===================
 
@@ -490,9 +500,6 @@ class Pympesa:
            ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         """
 
-        api_url = "https://sandbox.safaricom.co.ke/mpesa/accountbalance/v1/query"
-        headers = {"Authorization": "Bearer %s" % self.access_token}
-
         expected_keys = ["Initiator", "SecurityCredential", "PartyA",
                          "Remarks", "QueueTimeOutURL", "ResultURL"]
 
@@ -500,11 +507,13 @@ class Pympesa:
         payload["CommandID"] = "AccountBalance"
         payload["IdentifierType"] = "4"
 
-        response = requests.post(api_url, json=payload, headers=headers)
+        response = requests.post(
+            URL[self.env][self.version]["account_balance_request"],
+            json=payload, headers=self.headers)
 
-        return response.text
+        return response.json()
 
-    def reversal(self, **kwargs):
+    def reversal_request(self, **kwargs):
 
         """Use this API for reversal transaction.
 
@@ -551,6 +560,27 @@ class Pympesa:
            ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
+           REQUEST DESCRIPTION/EXAMPLE
+           ===========================
+
+           {
+            "Initiator": "Initiator" ,
+            "SecurityCredential": ("KThCBU5kAY2Qm0RafdgWaoFY8bsbufMuve0mKSVAJeAUD6LsOsv9k5jQ6Zmm750DXc2BGpm6g4jJ9bBo" +
+                                   "UJ9n/9Ar+8oN7RFg77d+C89pMUCUpOn1MJaAcDCh7lBXCLoVuin7aaaZnVYwUysalsfYcergUO4VI3QATFYhlXzEswB/9csCt0Hwm" +
+                                   "gZLKTDB1bH0o9C7tHbD7OAARx5JXgQm+RBqzdUVMw0t2huwjcNLW0hZMQgdmjK0T6ss9YqmHc5rjXDx5RDrFE/8Qjqst" +
+                                   "PLisX64bItqZURqNMR/h02UwEJO2nh5RalzUHSLPoq4Wx2TotYvMFvAXbW4/n5z14yng=="),
+            "CommandID": "Command ID e.g TransactionReversal",
+            "TransactionID": "Transaction ID e.g LC7918MI73",
+            "Amount": "Amount to reverse",
+            "ReceiverParty": "Short code",
+            "RecieverIdentifierType": "4",
+            "ResultURL": "https://ip_address:port/result_url",
+            "QueueTimeOutURL": "https://ip_address:port/timeout_url",
+            "Remarks":"Remarks of the transaction",
+            "Occasion": "Optional parameter"
+           }
+
+
            Response Parameters
            ===================
 
@@ -571,9 +601,6 @@ class Pympesa:
            ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         """
 
-        api_url = "https://sandbox.safaricom.co.ke/mpesa/reversal/v1/request"
-        headers = {"Authorization": "Bearer %s" % self.access_token}
-
         expected_keys = ["Initiator", "SecurityCredential",
                          "TransactionID", "Amount",
                          "ReceiverParty", "ResultURL",
@@ -583,9 +610,11 @@ class Pympesa:
         payload["CommandID"] = "TransactionReversal"
         payload["RecieverIdentifierType"] = "4"
 
-        response = requests.post(api_url, json=payload, headers=headers)
+        response = requests.post(
+            URL[self.env][self.version]["reversal_request"],
+            json=payload, headers=self.headers)
 
-        return response.text
+        return response.json()
 
     def lipa_na_mpesa_online_query(self, **kwargs):
 
@@ -640,17 +669,16 @@ class Pympesa:
            ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         """
 
-        api_url = "https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query"
-        headers = {"Authorization": "Bearer %s" % self.access_token}
-
         expected_keys = ["BusinessShortCode", "Password", "CheckoutRequestID"]
 
         payload = process_kwargs(expected_keys, kwargs)
         payload["Timestamp"] = generate_timestamp()
 
-        response = requests.post(api_url, json=payload, headers=headers)
+        response = requests.post(
+            URL[self.env][self.version]["lipa_na_mpesa_online_query"],
+            json=payload, headers=self.headers)
 
-        return response.text
+        return response.json()
 
     def lipa_na_mpesa_online_payment(self, **kwargs):
 
@@ -725,9 +753,6 @@ class Pympesa:
            ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         """
 
-        api_url = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest"
-        headers = {"Authorization": "Bearer %s" % self.access_token}
-
         expected_keys = ["BusinessShortCode", "Password",
                          "Amount", "PartyA", "PartyB",
                          "PhoneNumber", "CallBackURL",
@@ -737,28 +762,71 @@ class Pympesa:
         payload["Timestamp"] = generate_timestamp()
         payload["TransactionType"] = "CustomerPayBillOnline"
 
-        response = requests.post(api_url, json=payload, headers=headers)
+        response = requests.post(
+            URL[self.env][self.version]["lipa_na_mpesa_online_payment"],
+            json=payload, headers=self.headers)
 
-        return response.text
+        return response.json()
 
 
-def generate_oauth_access_token(consumer_key, consumer_secret):
+def oauth_generate_token(consumer_key, consumer_secret, env="production", version="v1"):
 
     """Authenticate your app and return an OAuth access token.
 
-       Positional Parameters
-       =====================
-       consumer_key    - YOUR APPs CONSUMER KEY
-       consumer_secret - YOUR APPs CONSUMER SECRET
-
+       This token gives you time bound access token to call allowed APIs.
        NOTE: The OAuth access token expires after an hour (3600 seconds),
              after which, you will need to generate another access token
              so you need to keep track of this.
+
+       Request Keyword Parameters
+       ==========================
+
+       Name	                    | Description	                                      | Parameter Type  | Possible Values
+       ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                |                                                     |                 |
+       grant_type               | client_credentials grant type is supported          | Query           |
+       ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                |                                                     |                 |
+       Authorization            | Basic Auth over HTTPS, this is a base64 encoded     | Header          |
+                                | string of an app's consumer key and consumer secret |                 |
+       ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+       Query Parameters
+       ================
+
+       Name	                    | values                                              | Description
+       ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                |                                                     |
+       grant_type               | client_credentials 	                              | Only client_credentials grant type is supported
+       (required)               |                                                     |
+       ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+       Response Parameters
+       ===================
+
+       Name	                    | Description	                                      | Parameter Type  | Possible Values
+       ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                |                                                     |                 |
+       Expiry                   | Token expiry time in seconds. 	                  | JSON Response   |
+                                |                                                     | Body	        |
+       ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                |                                                     |                 |
+       Access_Token             | Access token to access other APIs                   | JSON Response   |
+                                |                                                     | Body            |
+       ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     """
 
-    api_url = "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials"
+    return requests.get(URL[env][version]["oauth_generate_token"],
+                        auth=requests.auth.HTTPBasicAuth(consumer_key, consumer_secret))
 
-    return requests.get(api_url, auth=HTTPBasicAuth(consumer_key, consumer_secret))
+
+def encode_password(shortcode, passkey, timestamp):
+
+    """Generate and return a base64 encoded password for online access."""
+
+    return base64.encode(shortcode + passkey + timestamp)
 
 
 def generate_timestamp():

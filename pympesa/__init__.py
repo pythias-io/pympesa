@@ -17,10 +17,11 @@ from .urls import URL
 
 class Pympesa:
 
-    def __init__(self, access_token, env="production", version="v1"):
+    def __init__(self, access_token, env="production", version="v1", timeout=None):
         self.headers = {"Authorization": "Bearer %s" % access_token}
         self.env = env
         self.version = version
+        self.timeout = timeout
 
     def b2b_payment_request(self, **kwargs):
 
@@ -111,14 +112,20 @@ class Pympesa:
                          "RecieverIdentifierType", "Amount",
                          "PartyA", "PartyB", "AccountReference",
                          "Remarks", "QueueTimeOutURL", "ResultURL"]
-
         payload = process_kwargs(expected_keys, kwargs)
+        resposne = self.make_request(
+                URL[self.env][self.version]["b2b_payment_request"],
+                payload,
+                "POST"
+                )
+        return response
 
-        response = requests.post(
-            URL[self.env][self.version]["b2b_payment_request"],
-            json=payload, headers=self.headers)
+    def make_request(self, url, payload, method):
+        if self.timeout:
+            return requests.request(method, url, headers=self.headers, json=payload, timeout=self.timeout)
+        else:
+            return requests.request(method, url, headers=self.headers, json=payload)
 
-        return response.json()
 
     def b2c_payment_request(self, **kwargs):
 
@@ -198,11 +205,10 @@ class Pympesa:
 
         payload = process_kwargs(expected_keys, kwargs)
 
-        response = requests.post(
-            URL[self.env][self.version]["b2c_payment_request"],
-            json=payload, headers=self.headers)
+        response = self.make_request(
+            URL[self.env][self.version]["b2c_payment_request"], payload, "POST")
 
-        return response.json()
+        return response
 
     def c2b_register_url(self, **kwargs):
 
@@ -248,17 +254,12 @@ class Pympesa:
                                     |                                                     |                 |   successfully
            ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         """
-
         expected_keys = ["ShortCode", "ResponseType",
                          "ConfirmationURL", "ValidationURL"]
-
         payload = process_kwargs(expected_keys, kwargs)
-
-        response = requests.post(
-            URL[self.env][self.version]["c2b_register_url"],
-            json=payload, headers=self.headers)
-
-        return response.json()
+        response = self.make_request(URL[self.env][self.version]["c2b_register_url"],
+            payload, "POST")
+        return response
 
     def c2b_simulate_transaction(self, **kwargs):
 
@@ -309,15 +310,11 @@ class Pympesa:
 
         expected_keys = ["ShortCode", "Amount",
                          "Msisdn", "BillRefNumber"]
-
         payload = process_kwargs(expected_keys, kwargs)
         payload["CommandID"] = "CustomerPayBillOnline"
-
-        response = requests.post(
-            URL[self.env][self.version]["c2b_simulate_transaction"],
-            json=payload, headers=self.headers)
-
-        return response.json()
+        response = self.make_request(
+            URL[self.env][self.version]["c2b_simulate_transaction"], payload, "POST")
+        return response
 
     def transation_status_request(self, **kwargs):
 
@@ -411,16 +408,12 @@ class Pympesa:
                          "TransactionID", "PartyA",
                          "ResultURL", "QueueTimeOutURL",
                          "Remarks", "Occasion"]
-
         payload = process_kwargs(expected_keys, kwargs)
         payload["CommandID"] = "TransactionStatusQuery"
         payload["IdentifierType"] = "1"
-
-        response = requests.post(
-            URL[self.env][self.version]["transation_status_request"],
-            json=payload, headers=self.headers)
-
-        return response.json()
+        response = self.make_request(
+            URL[self.env][self.version]["transation_status_request"], payload, "POST")
+        return response
 
     def account_balance_request(self, **kwargs):
 
@@ -502,16 +495,12 @@ class Pympesa:
 
         expected_keys = ["Initiator", "SecurityCredential", "PartyA",
                          "Remarks", "QueueTimeOutURL", "ResultURL"]
-
         payload = process_kwargs(expected_keys, kwargs)
         payload["CommandID"] = "AccountBalance"
         payload["IdentifierType"] = "4"
-
-        response = requests.post(
-            URL[self.env][self.version]["account_balance_request"],
-            json=payload, headers=self.headers)
-
-        return response.json()
+        response = self.make_request(
+            URL[self.env][self.version]["account_balance_request"], payload, "POST")
+        return response
 
     def reversal_request(self, **kwargs):
 
@@ -605,16 +594,12 @@ class Pympesa:
                          "TransactionID", "Amount",
                          "ReceiverParty", "ResultURL",
                          "QueueTimeOutURL", "Remarks", "Occasion"]
-
         payload = process_kwargs(expected_keys, kwargs)
         payload["CommandID"] = "TransactionReversal"
         payload["RecieverIdentifierType"] = "4"
-
-        response = requests.post(
-            URL[self.env][self.version]["reversal_request"],
-            json=payload, headers=self.headers)
-
-        return response.json()
+        response = self.make_request(
+            URL[self.env][self.version]["reversal_request"], payload, "POST")
+        return response
 
     def lipa_na_mpesa_online_query(self, **kwargs):
 
@@ -670,15 +655,11 @@ class Pympesa:
         """
 
         expected_keys = ["BusinessShortCode", "Password", "CheckoutRequestID"]
-
         payload = process_kwargs(expected_keys, kwargs)
         payload["Timestamp"] = generate_timestamp()
-
-        response = requests.post(
-            URL[self.env][self.version]["lipa_na_mpesa_online_query"],
-            json=payload, headers=self.headers)
-
-        return response.json()
+        response = self.make_request(
+            URL[self.env][self.version]["lipa_na_mpesa_online_query"], payload, "POST")
+        return response
 
     def lipa_na_mpesa_online_payment(self, **kwargs):
 
@@ -757,19 +738,15 @@ class Pympesa:
                          "Amount", "PartyA", "PartyB",
                          "PhoneNumber", "CallBackURL",
                          "AccountReference", "TransactionDesc"]
-
         payload = process_kwargs(expected_keys, kwargs)
         payload["Timestamp"] = generate_timestamp()
         payload["TransactionType"] = "CustomerPayBillOnline"
-
-        response = requests.post(
-            URL[self.env][self.version]["lipa_na_mpesa_online_payment"],
-            json=payload, headers=self.headers)
-
-        return response.json()
+        response = self.make_request(
+            URL[self.env][self.version]["lipa_na_mpesa_online_payment"], payload, "POST")
+        return response
 
 
-def oauth_generate_token(consumer_key, consumer_secret, env="production", version="v1"):
+def oauth_generate_token(consumer_key, consumer_secret, grant_type="client_credentials", env="production", version="v1"):
 
     """Authenticate your app and return an OAuth access token.
 
@@ -818,7 +795,7 @@ def oauth_generate_token(consumer_key, consumer_secret, env="production", versio
        ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     """
 
-    return requests.get(URL[env][version]["oauth_generate_token"],
+    return requests.get(URL[env][version]["oauth_generate_token"], params=dict(grant_type=grant_type),
                         auth=requests.auth.HTTPBasicAuth(consumer_key, consumer_secret))
 
 

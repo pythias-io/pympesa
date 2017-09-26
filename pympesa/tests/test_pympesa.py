@@ -1,56 +1,73 @@
-import unittest, os, datetime
+import os
+import datetime
+import unittest
 from pympesa import pympesa
 
-CONSUMER_KEY = os.getenv("MPESA_CONSUMER_KEY_DEV")
-CONSUMER_SECRET = os.getenv("MPESA_CONSUMER_SECRET_DEV")
 
 class PympesaTests(unittest.TestCase):
 
     def setUp(self):
-        #access_token = self.generate_token()
         access_token = pympesa.oauth_generate_token(
-                CONSUMER_KEY, CONSUMER_SECRET).json().get("access_token")
+            os.getenv("TEST_MPESA_CONSUMER_KEY"),
+            os.getenv("TEST_MPESA_CONSUMER_SECRET")).json().get("access_token")
         print "token: " + access_token
         self.client = pympesa.Pympesa(access_token)
-        self.test_msisdn = "254708374149"
-        self.test_short_code_1 = "603082"
-        self.test_short_code_2 = "600000"
+        self.short_code_1 = os.getenv("TEST_MPESA_SHORT_CODE_1")
+        self.initiator_name_sc_1 = os.getenv("TEST_MPESA_INITIATOR_NAME_SC_1")
+        self.security_credential_sc_1 = \
+            os.getenv("TEST_MPESA_SECURITY_CREDENTIAL_SC_1")
+        self.short_code_2 = os.getenv("TEST_MPESA_SHORT_CODE_2")
+        self.test_msisdn = os.getenv("TEST_MPESA_MSISDN")
+        self.online_short_code = os.getenv("TEST_MPESA_ONLINE_SHORT_CODE")
+        self.online_pass_key = os.getenv("TEST_MPESA_ONLINE_PASS_KEY")
+        self.initiator_security_credential = \
+            os.getenv("TEST_MPESA_INITIATOR_SECURITY_CREDENTIAL")
+        self.validation_url = os.getenv("TEST_MPESA_VALIDATION_URL")
+        self.confirmation_url = os.getenv("TEST_MPESA_CONFIRMATION_URL")
 
-    def test_c2b_register_url(self):
-        ValidationURL = "https://4ffe7395.ngrok.io/safaricom"
-        ConfirmationURL = "https://4ffe7395.ngrok.io/safaricom"
-        ResponseType = "Cancelled"
-        ShortCode = self.test_short_code_1
+    def test_c2b_register_url_cancelled(self):
         resp = self.client.c2b_register_url(
-                ValidationURL=ValidationURL, 
-                ConfirmationURL=ConfirmationURL,
-                ResponseType=ResponseType,
-                ShortCode=ShortCode
-                )
-        result = resp.json()
-        self.assertEqual(resp.status_code, 200)
-        ResponseType = "Completed"
-        resp = self.client.c2b_register_url(
-                ValidationURL=ValidationURL, 
-                ConfirmationURL=ConfirmationURL,
-                ResponseType=ResponseType,
-                ShortCode=ShortCode
-                )
-        result = resp.json()
+            ValidationURL=self.validation_url,
+            ConfirmationURL=self.confirmation_url,
+            ResponseType="Cancelled",
+            ShortCode=self.short_code_1
+        )
         self.assertEqual(resp.status_code, 200)
 
+    def test_c2b_register_url_completed(self):
+        resp = self.client.c2b_register_url(
+            ValidationURL=self.validation_url,
+            ConfirmationURL=self.confirmation_url,
+            ResponseType="Completed",
+            ShortCode=self.short_code_1
+        )
+        self.assertEqual(resp.status_code, 200)
 
     def test_c2b_simulate_transaction(self):
         resp = self.client.c2b_simulate_transaction(
-                CommandID="CustomerPayBillOnline",
-                Amount=50,
-                Msisdn=self.test_msisdn,
-                BillRefNumber="pympesa-test",
-                ShortCode=self.test_short_code_1
-                )
+            CommandID="CustomerPayBillOnline",
+            Amount=50,
+            Msisdn=self.test_msisdn,
+            BillRefNumber="pympesa-test",
+            ShortCode=self.short_code_1
+        )
         self.assertEqual(resp.status_code, 200)
-        result = resp.json()
-        self.assertIn("ResponseDescription", result)
+        self.assertIn("ResponseDescription", resp.json())
+
+    def test_b2c(self):
+        resp = self.client.b2c_payment_request(
+            InitiatorName=self.self.initiator_name_sc_1,
+            SecurityCredential=self.security_credential_sc_1,
+            CommandID="BusinessPayment",
+            Amount=50,
+            PartyA=self.short_code_1,
+            PartyB=self.test_msisdn,
+            Remarks="Testing B2C",
+            QueueTimeOutURL="http://url",
+            ResultURL="http://url",
+            Occassion="Testcases"
+        )
+        self.assertEqual(resp.status_code, 200)
 
     def test_generate_timestamp(self):
         timestamp = pympesa.generate_timestamp()
@@ -60,9 +77,3 @@ class PympesaTests(unittest.TestCase):
         self.assertEqual(int(timestamp[:4]), datetime.datetime.now().year)
         self.assertEqual(int(timestamp[4:6]), datetime.datetime.now().month)
         self.assertEqual(int(timestamp[6:8]), datetime.datetime.now().day)
-
-
-
-
-if __name__ == "__main__":
-    unittest.main()

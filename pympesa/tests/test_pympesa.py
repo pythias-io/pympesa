@@ -69,6 +69,25 @@ class PympesaTests(unittest.TestCase):
         )
         self.assertEqual(resp.status_code, 200)
 
+    def test_lipa_na_mpesa_online_payment(self):
+        self.skipTest("Not Working")
+        resp = self.client.lipa_na_mpesa_online_payment(
+                BusinessShortCode=self.online_short_code,
+                Password=self.online_pass_key,
+                Timestamp=pympesa.generate_timestamp(),
+                TransactionType="CustomerPayBillOnline",
+                Amount=100,
+                PartyA=self.test_msisdn,
+                PartyB=self.short_code_1,
+                PhoneNumber=self.test_msisdn,
+                CallBackURL=self.validation_url,
+                AccountReference="pympesa-dev-test",
+                TransactionDesc="pympesa-dev-test"
+                )
+        self.assertEqual(resp.status_code, 200)
+        result = resp.json()
+        self.assertIn("ResponseCode", result)
+
     def test_generate_timestamp(self):
         timestamp = pympesa.generate_timestamp()
         print timestamp

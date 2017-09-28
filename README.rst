@@ -20,6 +20,8 @@ Installation:
 
     pip install pympesa
 
+Set up your environment by exporting the variables on `pympesa.env.tmpl`
+
 Usage:
 
   1. Create your app on https://developer.safaricom.co.ke/user/me/apps  [+ Add a new App]

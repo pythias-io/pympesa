@@ -54,17 +54,17 @@ class PympesaTests(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertIn("ResponseDescription", resp.json())
 
-    def test_b2c(self):
+    def test_b2c_payment_request(self):
         resp = self.client.b2c_payment_request(
-            InitiatorName=self.self.initiator_name_sc_1,
+            InitiatorName=self.initiator_name_sc_1,
             SecurityCredential=self.security_credential_sc_1,
             CommandID="BusinessPayment",
             Amount=50,
             PartyA=self.short_code_1,
             PartyB=self.test_msisdn,
             Remarks="Testing B2C",
-            QueueTimeOutURL="http://url",
-            ResultURL="http://url",
+            QueueTimeOutURL=self.validation_url,
+            ResultURL=self.validation_url,
             Occassion="Testcases"
         )
         self.assertEqual(resp.status_code, 200)
@@ -77,3 +77,6 @@ class PympesaTests(unittest.TestCase):
         self.assertEqual(int(timestamp[:4]), datetime.datetime.now().year)
         self.assertEqual(int(timestamp[4:6]), datetime.datetime.now().month)
         self.assertEqual(int(timestamp[6:8]), datetime.datetime.now().day)
+
+if __name__ == "__main__":
+    unittest.main()

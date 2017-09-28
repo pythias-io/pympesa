@@ -85,3 +85,5 @@ _static/assets/sublime
 _static/.sass-cache/
 
 _static/base.html
+
+*.swp

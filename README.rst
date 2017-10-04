@@ -78,3 +78,8 @@ Changelog
 ~~~~~~~~~~~~~~~~
 
 - Initial version
+
+0.4 - 2017/10/19
+~~~~~~~~~~~~~~~~
+
+- Added testcases

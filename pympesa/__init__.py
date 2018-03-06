@@ -161,7 +161,7 @@ class Pympesa:
 
         Use this API to initiate online payment on behalf of a customer.
 
-        https://developer.safaricom.co.ke/lipa-na-m-pesa-online/apis/post/stkpush/v1/processrequest
+        https://developer.safaricom.co.ke/docs#lipa-na-m-pesa-online-payment
         """
 
         expected_keys = ["BusinessShortCode", "Password",
@@ -203,7 +203,7 @@ def oauth_generate_token(consumer_key, consumer_secret, grant_type="client_crede
 def encode_password(shortcode, passkey, timestamp):
     """Generate and return a base64 encoded password for online access.
     """
-    return base64.encode(shortcode + passkey + timestamp)
+    return base64.b64encode(shortcode + passkey + timestamp)
 
 
 def generate_timestamp():

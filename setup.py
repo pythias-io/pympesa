@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='pympesa',
-      version='0.4.1',
+      version='1.0',
       description='Mpesa rest api library',
       url='https://github.com/pythias-io/pympesa',
       author='Andrew Kamau',

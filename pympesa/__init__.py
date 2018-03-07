@@ -148,9 +148,8 @@ class Pympesa:
         https://developer.safaricom.co.ke/lipa-na-m-pesa-online/apis/post/stkpushquery/v1/query
         """
 
-        expected_keys = ["BusinessShortCode", "Password", "CheckoutRequestID"]
+        expected_keys = ["BusinessShortCode", "Password", "CheckoutRequestID", "Timestamp"]
         payload = process_kwargs(expected_keys, kwargs)
-        payload["Timestamp"] = generate_timestamp()
         response = self.make_request(
             URL[self.env][self.version]["lipa_na_mpesa_online_query"], payload, "POST")
         return response
@@ -164,12 +163,10 @@ class Pympesa:
         https://developer.safaricom.co.ke/docs#lipa-na-m-pesa-online-payment
         """
 
-        expected_keys = ["BusinessShortCode", "Password",
-                         "Amount", "PartyA", "PartyB",
-                         "PhoneNumber", "CallBackURL",
-                         "AccountReference", "TransactionDesc"]
+        expected_keys = ["BusinessShortCode", "Password", "Timestamp",
+                         "Amount", "PartyA", "PartyB", "PhoneNumber",
+                         "CallBackURL", "AccountReference", "TransactionDesc"]
         payload = process_kwargs(expected_keys, kwargs)
-        payload["Timestamp"] = generate_timestamp()
         payload["TransactionType"] = "CustomerPayBillOnline"
         response = self.make_request(
             URL[self.env][self.version]["lipa_na_mpesa_online_payment"], payload, "POST")

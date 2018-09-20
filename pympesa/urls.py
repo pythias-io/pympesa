@@ -22,6 +22,7 @@ URL["production"]["v1"] = {}
 URL["production"]["v1"]["reversal_request"] = os.getenv("PROD_MPESA_URL_REVERSAL")
 URL["production"]["v1"]["b2c_payment_request"] = os.getenv("PROD_MPESA_URL_B2C")
 URL["production"]["v1"]["b2b_payment_request"] = os.getenv("PROD_MPESA_URL_B2B")
+URL["production"]["v1"]["c2b_register_url"] = os.getenv("PROD_MPESA_URL_C2B_REGISTER")
 URL["production"]["v1"]["c2b_simulate_transaction"] = os.getenv("PROD_MPESA_URL_C2B_SIMULATE")
 URL["production"]["v1"]["transation_status_request"] = os.getenv("PROD_MPESA_URL_TXN_STATUS")
 URL["production"]["v1"]["account_balance_request"] = os.getenv("PROD_MPESA_URL_BALANCE")

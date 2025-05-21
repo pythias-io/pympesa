@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 """Mpesa rest API client.
 
@@ -200,7 +200,11 @@ def oauth_generate_token(consumer_key, consumer_secret, grant_type="client_crede
 def encode_password(shortcode, passkey, timestamp):
     """Generate and return a base64 encoded password for online access.
     """
-    return base64.b64encode(shortcode + passkey + timestamp)
+    password_str = shortcode + passkey + timestamp
+    password_bytes = password_str.encode('utf-8')
+    encoded_bytes = base64.b64encode(password_bytes)
+    return encoded_bytes.decode('utf-8')
+
 
 
 def generate_timestamp():

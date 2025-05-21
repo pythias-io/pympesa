@@ -5,7 +5,6 @@ setup(name='pympesa',
       description='Daraja (Mpesa REST API) python library',
       url='https://github.com/pythias-io/pympesa',
       author='Andrew Kamau',
-      author_email='andrew@pythias.io',
       license='MIT',
       packages=['pympesa'],
       install_requires=[

@@ -5,7 +5,9 @@
 This exposes various mpesa functionalities to developers.
 
 All class functions take in keyword arguments (kwargs) and
-response returned in json.
+response returned is a response object from (python requests).
+From this object you can retrieve the response parameters
+as text or json.
 """
 
 import base64
@@ -26,6 +28,7 @@ class Pympesa:
     def b2b_payment_request(self, **kwargs):
 
         """Mpesa Transaction from one company to another.
+
         https://developer.safaricom.co.ke/b2b/apis/post/paymentrequest
         """
 
@@ -35,19 +38,9 @@ class Pympesa:
                          "PartyA", "PartyB", "AccountReference",
                          "Remarks", "QueueTimeOutURL", "ResultURL"]
         payload = process_kwargs(expected_keys, kwargs)
-        resposne = self.make_request(
-                URL[self.env][self.version]["b2b_payment_request"],
-                payload,
-                "POST"
-                )
+        response = self.make_request(URL[self.env][self.version]["b2b_payment_request"],
+                                     payload, "POST")
         return response
-
-    def make_request(self, url, payload, method):
-        if self.timeout:
-            return requests.request(method, url, headers=self.headers, json=payload, timeout=self.timeout)
-        else:
-            return requests.request(method, url, headers=self.headers, json=payload)
-
 
     def b2c_payment_request(self, **kwargs):
 
@@ -78,7 +71,7 @@ class Pympesa:
                          "ConfirmationURL", "ValidationURL"]
         payload = process_kwargs(expected_keys, kwargs)
         response = self.make_request(URL[self.env][self.version]["c2b_register_url"],
-            payload, "POST")
+                                     payload, "POST")
         return response
 
     def c2b_simulate_transaction(self, **kwargs):
@@ -155,9 +148,8 @@ class Pympesa:
         https://developer.safaricom.co.ke/lipa-na-m-pesa-online/apis/post/stkpushquery/v1/query
         """
 
-        expected_keys = ["BusinessShortCode", "Password", "CheckoutRequestID"]
+        expected_keys = ["BusinessShortCode", "Password", "CheckoutRequestID", "Timestamp"]
         payload = process_kwargs(expected_keys, kwargs)
-        payload["Timestamp"] = generate_timestamp()
         response = self.make_request(
             URL[self.env][self.version]["lipa_na_mpesa_online_query"], payload, "POST")
         return response
@@ -168,19 +160,26 @@ class Pympesa:
 
         Use this API to initiate online payment on behalf of a customer.
 
-        https://developer.safaricom.co.ke/lipa-na-m-pesa-online/apis/post/stkpush/v1/processrequest
+        https://developer.safaricom.co.ke/docs#lipa-na-m-pesa-online-payment
         """
 
-        expected_keys = ["BusinessShortCode", "Password",
-                         "Amount", "PartyA", "PartyB",
-                         "PhoneNumber", "CallBackURL",
-                         "AccountReference", "TransactionDesc"]
+        expected_keys = ["BusinessShortCode", "Password", "Timestamp",
+                         "Amount", "PartyA", "PartyB", "PhoneNumber",
+                         "CallBackURL", "AccountReference", "TransactionDesc"]
         payload = process_kwargs(expected_keys, kwargs)
-        payload["Timestamp"] = generate_timestamp()
         payload["TransactionType"] = "CustomerPayBillOnline"
         response = self.make_request(
             URL[self.env][self.version]["lipa_na_mpesa_online_payment"], payload, "POST")
         return response
+
+    def make_request(self, url, payload, method):
+
+        """Invoke url and return a python request object"""
+
+        if self.timeout:
+            return requests.request(method, url, headers=self.headers, json=payload, timeout=self.timeout)
+        else:
+            return requests.request(method, url, headers=self.headers, json=payload)
 
 
 def oauth_generate_token(consumer_key, consumer_secret, grant_type="client_credentials", env="production", version="v1"):
@@ -193,11 +192,9 @@ def oauth_generate_token(consumer_key, consumer_secret, grant_type="client_crede
              so you need to keep track of this.
     """
 
-    return requests.get(
-            URL[env][version]["oauth_generate_token"],
-            params=dict(grant_type=grant_type),
-            auth=requests.auth.HTTPBasicAuth(consumer_key, consumer_secret)
-            )
+    return requests.get(URL[env][version]["oauth_generate_token"],
+                        params=dict(grant_type=grant_type),
+                        auth=requests.auth.HTTPBasicAuth(consumer_key, consumer_secret))
 
 
 def encode_password(shortcode, passkey, timestamp):
@@ -207,6 +204,7 @@ def encode_password(shortcode, passkey, timestamp):
     password_bytes = password_str.encode('utf-8')
     encoded_bytes = base64.b64encode(password_bytes)
     return encoded_bytes.decode('utf-8')
+
 
 
 def generate_timestamp():

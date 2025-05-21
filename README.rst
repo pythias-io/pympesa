@@ -20,6 +20,8 @@ Installation:
 
     pip install pympesa
 
+Set up your environment by exporting the variables on `pympesa.env.tmpl`
+
 Usage:
 
   1. Create your app on https://developer.safaricom.co.ke/user/me/apps  [+ Add a new App]
@@ -76,3 +78,13 @@ Changelog
 ~~~~~~~~~~~~~~~~
 
 - Initial version
+
+0.4 - 2017/10/04
+~~~~~~~~~~~~~~~~
+
+- Added testcases
+
+0.4.1 - 2017/10/04
+~~~~~~~~~~~~~~~~~~
+
+- Updated project home url on pypi from bitbucket to github

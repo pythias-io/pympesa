@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+import os
+
 URL = {}
 
 URL["sandbox"] = {}
@@ -17,6 +19,7 @@ URL["sandbox"]["v1"]["oauth_generate_token"] = "https://sandbox.safaricom.co.ke/
 
 URL["production"] = {}
 URL["production"]["v1"] = {}
+
 URL["production"]["v1"]["reversal_request"] = "https://api.safaricom.co.ke/mpesa/reversal/v1/request"
 URL["production"]["v1"]["b2c_payment_request"] = "https://api.safaricom.co.ke/mpesa/b2c/v1/paymentrequest"
 URL["production"]["v1"]["b2b_payment_request"] = "https://api.safaricom.co.ke/mpesa/b2b/v1/paymentrequest"

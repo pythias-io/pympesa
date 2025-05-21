@@ -1,8 +1,8 @@
 import unittest, os, datetime
-import pympesa # Changed this line
+import pympesa
 
-CONSUMER_KEY = os.getenv("MPESA_CONSUMER_KEY_DEV")
-CONSUMER_SECRET = os.getenv("MPESA_CONSUMER_SECRET_DEV")
+ENV = "production"
+#ENV = "development"
 
 class PympesaTests(unittest.TestCase):
 
@@ -54,6 +54,7 @@ class PympesaTests(unittest.TestCase):
     #     result = resp.json()
     #     self.assertIn("ResponseDescription", result)
 
+
     def test_generate_timestamp(self):
         timestamp = pympesa.generate_timestamp()
         print(timestamp) # Python 3 print
@@ -62,9 +63,6 @@ class PympesaTests(unittest.TestCase):
         self.assertEqual(int(timestamp[:4]), datetime.datetime.now().year)
         self.assertEqual(int(timestamp[4:6]), datetime.datetime.now().month)
         self.assertEqual(int(timestamp[6:8]), datetime.datetime.now().day)
-
-
-
 
 if __name__ == "__main__":
     unittest.main()
